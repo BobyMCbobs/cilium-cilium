@@ -127,6 +127,9 @@ node_config() {
     echo "  extraMounts:"
     echo "  - hostPath: $CILIUM_ROOT"
     echo "    containerPath: /home/vagrant/go/src/github.com/cilium/cilium"
+    echo "  - hostPath: $CILIUM_ROOT/contrib/scripts/kind-config/audit"
+    echo "    containerPath: /etc/kubernetes/policies"
+    echo "    readOnly: True"
     if [[ "${max}" -lt 10 ]]; then
         echo "  extraPortMappings:"
         echo "  - containerPort: 2345"
@@ -208,6 +211,14 @@ kubeadmConfigPatches:
     apiServer:
       extraArgs:
         "v": "3"
+        "audit-webhook-config-file": "/etc/kubernetes/policies/sink.yaml"
+        "audit-policy-file": "/etc/kubernetes/policies/policy.yaml"
+      extraVolumes:
+        - name: audit-policies
+          hostPath: /etc/kubernetes/policies
+          mountPath: /etc/kubernetes/policies
+          readOnly: true
+          pathType: "DirectoryOrCreate"
 EOF
 
 if [ "${secondary_network_flag}" = true ]; then
